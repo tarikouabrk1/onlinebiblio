@@ -104,7 +104,6 @@ This will create a WAR file in the `target` directory.
 
 ## Project Structure
 
-\`\`\`
 online-library/
 ├── src/main/java/com/library/
 │   ├── dao/              # Data Access Objects
@@ -118,10 +117,10 @@ online-library/
 │   ├── css/              # Stylesheets
 │   ├── error/            # Error pages
 │   ├── includes/         # Reusable JSP components
-│   └── WEB-INF/          # Configuration files
-├── database/             # SQL scripts
-└── pom.xml              # Maven configuration
-\`\`\`
+│   └── WEB-INF/          # Configuration files (web.xml, JSP sécurisées)
+├── database/             # SQL scripts (schema & data)
+└── pom.xml               # Maven configuration
+
 
 ## Features Breakdown
 
