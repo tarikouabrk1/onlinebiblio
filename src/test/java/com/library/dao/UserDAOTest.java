@@ -1,4 +1,4 @@
-package library.dao;
+package com.library.dao;
 
 import com.library.dao.UserDAO;
 import com.library.model.User;

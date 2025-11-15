@@ -1,4 +1,4 @@
-package library.model;
+package com.library.model;
 
 import org.junit.Before;
 import org.junit.Test;

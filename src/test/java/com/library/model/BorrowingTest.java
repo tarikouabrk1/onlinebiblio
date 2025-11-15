@@ -1,4 +1,4 @@
-package library.model;
+package com.library.model;
 
 import com.library.model.Borrowing;
 import org.junit.Before;

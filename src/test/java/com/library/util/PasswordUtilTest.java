@@ -1,4 +1,4 @@
-package library.util;
+package com.library.util;
 import com.library.util.PasswordUtil;
 import org.junit.Test;
 import static org.junit.Assert.*;
