@@ -3,3 +3,4 @@ com\library\util\PasswordUtilTest.class
 com\library\model\BookTest.class
 com\library\dao\UserDAOTest.class
 com\library\model\UserTest.class
+com\library\dao\BookDAOTest.class
