@@ -5,7 +5,7 @@ online-library,com.library.model,Borrowing,3,104,0,2,1,42,1,28,1,27
 online-library,com.library.dao,BookDAO,367,300,33,13,102,73,27,11,8,7
 online-library,com.library.dao,UserDAO,397,7,40,0,102,2,29,2,9,2
 online-library,com.library.dao,BorrowingDAO,501,7,46,0,125,2,33,2,10,2
-online-library,com.library.servlet.admin,AdminBookServlet,222,0,14,0,55,0,17,0,10,0
+online-library,com.library.servlet.admin,AdminBookServlet,12,214,3,11,4,53,4,14,1,10
 online-library,com.library.servlet.admin,AdminBorrowingServlet,28,0,0,0,8,0,3,0,3,0
 online-library,com.library.servlet.admin,AdminDashboardServlet,75,0,0,0,18,0,3,0,3,0
 online-library,com.library.servlet.admin,AdminUserServlet,60,0,4,0,17,0,7,0,5,0

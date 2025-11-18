@@ -11,8 +11,14 @@ import java.io.IOException;
 import java.util.List;
 
 public class AdminBookServlet extends HttpServlet {
-    private BookDAO bookDAO;
-    
+    BookDAO bookDAO;
+
+
+    // In AdminBookServlet
+    void setBookDAO(BookDAO bookDAO) {
+        this.bookDAO = bookDAO;
+    }
+
     @Override
     public void init() throws ServletException {
         bookDAO = new BookDAO();
