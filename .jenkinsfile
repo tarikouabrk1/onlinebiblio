@@ -31,7 +31,7 @@ pipeline {
         echo "Setting up Minikube cluster..."
         script {
             def status = bat(script: '@minikube status 2>nul', returnStatus: true)
-
+            
             if (status != 0) {
                 echo "Starting Minikube with 3GB memory..."
                 bat "minikube delete 2>nul || echo No existing cluster"
@@ -43,7 +43,7 @@ pipeline {
                     script: '@minikube kubectl -- get nodes 2>nul',
                     returnStatus: true
                 )
-
+                
                 if (apiTest != 0) {
                     echo "API not responding. Recreating cluster..."
                     bat "minikube delete"
@@ -53,22 +53,22 @@ pipeline {
                     echo "Cluster is healthy!"
                 }
             }
-
+            
             // Attendre que l'API soit accessible
             echo "Waiting for Kubernetes API..."
             def apiReady = false
             def maxAttempts = 30
             def attempt = 0
-
+            
             while (!apiReady && attempt < maxAttempts) {
                 attempt++
                 sleep(10)
-
+                
                 def apiStatus = bat(
                     script: '@minikube kubectl -- get nodes 2>nul',
                     returnStatus: true
                 )
-
+                
                 if (apiStatus == 0) {
                     apiReady = true
                     echo "✅ Kubernetes API is ready! (after ${attempt * 10}s)"
@@ -76,18 +76,18 @@ pipeline {
                     echo "⏳ Still waiting... (${attempt * 10}s elapsed)"
                 }
             }
-
+            
             if (!apiReady) {
                 error("❌ Kubernetes API did not become ready after ${maxAttempts * 10} seconds!")
             }
         }
-
+        
         echo "Verifying cluster status..."
         bat "minikube status"
         bat "minikube kubectl -- get nodes"
     }
 }
-
+       
         stage('Build & Test') {
             steps {
                 echo "Building and testing the application..."
@@ -104,7 +104,7 @@ pipeline {
 
         stage('SonarQube Analysis') {
             environment {
-                SCANNER_HOME = tool name: 'SonarScanner',
+                SCANNER_HOME = tool name: 'SonarScanner', 
                                    type: 'hudson.plugins.sonar.SonarRunnerInstallation'
             }
 
@@ -152,12 +152,12 @@ pipeline {
                 }
             }
         }
-
+        
 
         stage('Deploy to Kubernetes') {
     steps {
         echo "Deploying to Kubernetes..."
-
+        
         // Utiliser minikube kubectl -- directement
         bat "minikube kubectl -- apply -f k8s/namespace.yaml --validate=false"
         bat "minikube kubectl -- apply -f k8s/mysql-deployment.yaml --validate=false"
@@ -178,19 +178,11 @@ pipeline {
         echo "Verifying Kubernetes deployment..."
         bat "minikube kubectl -- get pods -n ${K8S_NAMESPACE}"
         bat "minikube kubectl -- get services -n ${K8S_NAMESPACE}"
-
+        
         echo "=========================================="
-        echo "✨ TO ACCESS YOUR APPLICATION:"
+        echo "🚀 APPLICATION URL:"
         echo "=========================================="
-        echo ""
-        echo "1. Open a NEW terminal (PowerShell or CMD)"
-        echo "2. Run this command:"
-        echo "   kubectl port-forward -n ${K8S_NAMESPACE} svc/${K8S_SERVICE_NAME} 8083:8080"
-        echo "3. Keep the terminal open"
-        echo "4. Open your browser to:"
-        echo "   👉 http://localhost:8083/online-library"
-        echo ""
-        echo "📝 Note: Don't forget '/online-library' at the end!"
+        bat "minikube service ${K8S_SERVICE_NAME} -n ${K8S_NAMESPACE} --url"
         echo "=========================================="
     }
 }
@@ -206,6 +198,6 @@ pipeline {
         always {
             echo "Pipeline finished."
             bat "docker image prune -f"
-        }
-    }
+        }
+    }
 }
