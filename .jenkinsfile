@@ -23,7 +23,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/tarikouabrk1/onlinebiblio'
+                checkout scm
             }
         }
         stage('Setup Minikube') {
