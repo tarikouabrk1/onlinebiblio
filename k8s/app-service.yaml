@@ -11,4 +11,5 @@ spec:
     - protocol: TCP
       port: 8080
       targetPort: 8082
-  type: LoadBalancer  # or NodePort if using Minikube/Docker Desktop
+      nodePort: 30080
+  type: NodePort  # ← Changez LoadBalancer en NodePort
