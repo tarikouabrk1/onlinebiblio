@@ -26,68 +26,7 @@ pipeline {
                 checkout scm
             }
         }
-        stage('Setup Minikube') {
-    steps {
-        echo "Setting up Minikube cluster..."
-        script {
-            def status = bat(script: '@minikube status 2>nul', returnStatus: true)
-            
-            if (status != 0) {
-                echo "Starting Minikube with 3GB memory..."
-                bat "minikube delete 2>nul || echo No existing cluster"
-                // Réduire à 3GB au lieu de 4GB
-                bat "minikube start --driver=docker --memory=3072 --cpus=2"
-            } else {
-                echo "Minikube detected. Verifying API access..."
-                def apiTest = bat(
-                    script: '@minikube kubectl -- get nodes 2>nul',
-                    returnStatus: true
-                )
-                
-                if (apiTest != 0) {
-                    echo "API not responding. Recreating cluster..."
-                    bat "minikube delete"
-                    sleep(5)
-                    bat "minikube start --driver=docker --memory=3072 --cpus=2"
-                } else {
-                    echo "Cluster is healthy!"
-                }
-            }
-            
-            // Attendre que l'API soit accessible
-            echo "Waiting for Kubernetes API..."
-            def apiReady = false
-            def maxAttempts = 30
-            def attempt = 0
-            
-            while (!apiReady && attempt < maxAttempts) {
-                attempt++
-                sleep(10)
-                
-                def apiStatus = bat(
-                    script: '@minikube kubectl -- get nodes 2>nul',
-                    returnStatus: true
-                )
-                
-                if (apiStatus == 0) {
-                    apiReady = true
-                    echo "✅ Kubernetes API is ready! (after ${attempt * 10}s)"
-                } else {
-                    echo "⏳ Still waiting... (${attempt * 10}s elapsed)"
-                }
-            }
-            
-            if (!apiReady) {
-                error("❌ Kubernetes API did not become ready after ${maxAttempts * 10} seconds!")
-            }
-        }
-        
-        echo "Verifying cluster status..."
-        bat "minikube status"
-        bat "minikube kubectl -- get nodes"
-    }
-}
-       
+
         stage('Build & Test') {
             steps {
                 echo "Building and testing the application..."
@@ -104,7 +43,7 @@ pipeline {
 
         stage('SonarQube Analysis') {
             environment {
-                SCANNER_HOME = tool name: 'SonarScanner', 
+                SCANNER_HOME = tool name: 'SonarScanner',
                                    type: 'hudson.plugins.sonar.SonarRunnerInstallation'
             }
 
@@ -152,12 +91,12 @@ pipeline {
                 }
             }
         }
-        
+
 
         stage('Deploy to Kubernetes') {
     steps {
         echo "Deploying to Kubernetes..."
-        
+
         // Utiliser minikube kubectl -- directement
         bat "minikube kubectl -- apply -f k8s/namespace.yaml --validate=false"
         bat "minikube kubectl -- apply -f k8s/mysql-deployment.yaml --validate=false"
@@ -178,7 +117,7 @@ pipeline {
         echo "Verifying Kubernetes deployment..."
         bat "minikube kubectl -- get pods -n ${K8S_NAMESPACE}"
         bat "minikube kubectl -- get services -n ${K8S_NAMESPACE}"
-        
+
         echo "=========================================="
         echo "🚀 APPLICATION URL:"
         echo "=========================================="
