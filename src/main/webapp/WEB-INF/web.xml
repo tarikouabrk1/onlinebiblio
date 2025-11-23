@@ -125,7 +125,17 @@
         <servlet-name>AdminUserServlet</servlet-name>
         <url-pattern>/admin/users</url-pattern>
     </servlet-mapping>
-    
+    <servlet>
+        <servlet-name>PrometheusMetricsServlet</servlet-name>
+        <servlet-class>com.library.metrics.PrometheusMetricsServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>PrometheusMetricsServlet</servlet-name>
+        <url-pattern>/metrics</url-pattern>
+    </servlet-mapping>
+
+
     <servlet>
         <servlet-name>AdminBorrowingServlet</servlet-name>
         <servlet-class>com.library.servlet.admin.AdminBorrowingServlet</servlet-class>
