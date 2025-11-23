@@ -3,6 +3,7 @@ C:\Users\PC\Desktop\online-library\src\main\java\com\library\dao\BorrowingDAO.ja
 C:\Users\PC\Desktop\online-library\src\main\java\com\library\dao\UserDAO.java
 C:\Users\PC\Desktop\online-library\src\main\java\com\library\filter\AdminFilter.java
 C:\Users\PC\Desktop\online-library\src\main\java\com\library\filter\AuthFilter.java
+C:\Users\PC\Desktop\online-library\src\main\java\com\library\metrics\PrometheusMetricsServlet.java
 C:\Users\PC\Desktop\online-library\src\main\java\com\library\model\Book.java
 C:\Users\PC\Desktop\online-library\src\main\java\com\library\model\Borrowing.java
 C:\Users\PC\Desktop\online-library\src\main\java\com\library\model\User.java
