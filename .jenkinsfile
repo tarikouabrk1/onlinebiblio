@@ -16,15 +16,28 @@ pipeline {
         // Kubernetes
         K8S_NAMESPACE = "online-library"
         K8S_DEPLOYMENT_NAME = "online-library"
-        K8S_SERVICE_NAME = "online-library-service"  // ← AJOUTER CECI
-
+        K8S_SERVICE_NAME = "online-library-service"
     }
 
     stages {
 
+        stage('Clean Workspace') {
+            steps {
+                echo "Cleaning Jenkins workspace..."
+                deleteDir()
+            }
+        }
+
         stage('Checkout') {
             steps {
                 checkout scm
+            }
+        }
+
+        stage('Preload Maven Dependencies') {
+            steps {
+                echo "Preloading Maven dependencies..."
+                bat "mvn dependency:go-offline"
             }
         }
 
@@ -35,30 +48,23 @@ pipeline {
             }
         }
 
-        stage('Copy Dependencies') {
-            steps {
-                echo "Copying Maven dependencies..."
-                bat "mvn dependency:copy-dependencies -DoutputDirectory=target/dependency"
-            }
-        }
-
         stage('SonarQube Analysis') {
             environment {
-                SCANNER_HOME = tool name: 'SonarScanner',
-                                   type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+                SCANNER_HOME = tool name: 'SonarScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
             }
-
             steps {
-                bat "\"${SCANNER_HOME}\\bin\\sonar-scanner.bat\" " +
-                    "-Dsonar.projectKey=onlinebiblio " +
-                    "-Dsonar.projectName=OnlineBiblio " +
-                    "-Dsonar.sources=src/main/java " +
-                    "-Dsonar.tests=src/test/java " +
-                    "-Dsonar.java.binaries=target/classes " +
-                    "-Dsonar.java.libraries=target/dependency/*.jar " +
-                    "-Dsonar.coverage.jacoco.xmlReportPaths=target/jacoco-report/jacoco.xml " +
-                    "-Dsonar.host.url=http://localhost:9000 " +
-                    "-Dsonar.token=squ_2bdfa87eef4adf7312650e24d5f03e934144b9e8"
+                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
+                    bat "\"${SCANNER_HOME}\\bin\\sonar-scanner.bat\" " +
+                        "-Dsonar.projectKey=onlinebiblio " +
+                        "-Dsonar.projectName=OnlineBiblio " +
+                        "-Dsonar.sources=src/main/java " +
+                        "-Dsonar.tests=src/test/java " +
+                        "-Dsonar.java.binaries=target/classes " +
+                        "-Dsonar.java.libraries=target/dependency/*.jar " +
+                        "-Dsonar.coverage.jacoco.xmlReportPaths=target/jacoco-report/jacoco.xml " +
+                        "-Dsonar.host.url=http://localhost:9000 " +
+                        "-Dsonar.login=%SONAR_AUTH_TOKEN%"
+                }
             }
         }
 
@@ -80,12 +86,8 @@ pipeline {
                         passwordVariable: 'DOCKER_PASS'
                     )]) {
                         bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
-
-                        // Push the version tag
                         bat "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}"
                         bat "docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}"
-
-                        // Push latest tag
                         bat "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest"
                         bat "docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest"
                     }
@@ -93,37 +95,27 @@ pipeline {
             }
         }
 
-
         stage('Deploy to Kubernetes') {
-    steps {
-        echo "Deploying to Kubernetes..."
+            steps {
+                echo "Deploying to Kubernetes..."
+                bat "minikube kubectl -- apply -f k8s/namespace.yaml --validate=false"
+                bat "minikube kubectl -- apply -f k8s/mysql-deployment.yaml --validate=false"
+                bat "minikube kubectl -- apply -f k8s/mysql-service.yaml --validate=false"
+                bat "minikube kubectl -- apply -f k8s/app-deployment.yaml --validate=false"
+                bat "minikube kubectl -- apply -f k8s/app-service.yaml --validate=false"
+                bat "minikube kubectl -- apply -f k8s/servicemonitor.yaml"
 
-        // Utiliser minikube kubectl -- directement
-        bat "minikube kubectl -- apply -f k8s/namespace.yaml --validate=false"
-        bat "minikube kubectl -- apply -f k8s/mysql-deployment.yaml --validate=false"
-        bat "minikube kubectl -- apply -f k8s/mysql-service.yaml --validate=false"
-        bat "minikube kubectl -- apply -f k8s/app-deployment.yaml --validate=false"
-        bat "minikube kubectl -- apply -f k8s/app-service.yaml --validate=false"
-        bat "minikube kubectl -- apply -f k8s/servicemonitor.yaml"
-
-        bat "kubectl get pods -n monitoring"
-
-
-
-        // Update image
-        bat "minikube kubectl -- set image deployment/${K8S_DEPLOYMENT_NAME} online-library=${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG} -n ${K8S_NAMESPACE} "
-
-        // Rollout status
-        bat "minikube kubectl -- rollout status deployment/${K8S_DEPLOYMENT_NAME} -n ${K8S_NAMESPACE}"
-    }
-}
+                // Update image
+                bat "minikube kubectl -- set image deployment/${K8S_DEPLOYMENT_NAME} online-library=${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG} -n ${K8S_NAMESPACE}"
+                bat "minikube kubectl -- rollout status deployment/${K8S_DEPLOYMENT_NAME} -n ${K8S_NAMESPACE}"
+            }
+        }
 
         stage('Verify Deployment') {
             steps {
                 echo "Verifying Kubernetes deployment..."
                 bat "minikube kubectl -- get pods -n ${K8S_NAMESPACE}"
                 bat "minikube kubectl -- get services -n ${K8S_NAMESPACE}"
-
                 echo "=========================================="
                 echo "APPLICATION URL:"
                 echo "http://192.168.49.2:30080  (NodePort, IP fixe de Minikube)"
