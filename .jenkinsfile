@@ -125,7 +125,8 @@ pipeline {
 
                         // Attendre l'initialisation
                         echo "Waiting for database initialization..."
-                        bat "timeout /t 15 /nobreak"
+                        sleep(time: 15, unit: 'SECONDS')
+
 
                         // Déployer l'application
                         bat "minikube kubectl -- apply -f k8s/app-deployment.yaml --validate=false"
