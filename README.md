@@ -121,7 +121,22 @@ online-library/
 ├── database/             # SQL scripts (schema & data)
 └── pom.xml               # Maven configuration
 
-
+online-library/
+├── src/main/java/com/library/
+│ ├── dao/ # Data Access Objects
+│ ├── filter/ # Servlet Filters (Auth, Admin)
+│ ├── model/ # Entity classes
+│ ├── servlet/ # Servlets
+│ │ └── admin/ # Admin servlets
+│ └── util/ # Utility classes
+├── src/main/webapp/
+│ ├── admin/ # Admin JSP pages
+│ ├── css/ # Stylesheets
+│ ├── error/ # Error pages
+│ ├── includes/ # Reusable JSP components
+│ └── WEB-INF/ # Configuration files (web.xml, JSP sécurisées)
+├── database/ # SQL scripts (schema & data)
+└── pom.xml # Maven configuration
 ## Features Breakdown
 
 ### Authentication & Authorization
