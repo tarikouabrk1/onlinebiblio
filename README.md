@@ -103,40 +103,22 @@ This will create a WAR file in the `target` directory.
 - **Username**: bob_wilson | **Password**: user123
 
 ## Project Structure
-
 online-library/
 ├── src/main/java/com/library/
-│   ├── dao/              # Data Access Objects
-│   ├── filter/           # Servlet Filters (Auth, Admin)
-│   ├── model/            # Entity classes
-│   ├── servlet/          # Servlets
-│   │   └── admin/        # Admin servlets
-│   └── util/             # Utility classes
+│ ├── dao/ 
+│ ├── filter/ 
+│ ├── model/ 
+│ ├── servlet/ 
+│ │ └── admin/ 
+│ └── util/ 
 ├── src/main/webapp/
-│   ├── admin/            # Admin JSP pages
-│   ├── css/              # Stylesheets
-│   ├── error/            # Error pages
-│   ├── includes/         # Reusable JSP components
-│   └── WEB-INF/          # Configuration files (web.xml, JSP sécurisées)
-├── database/             # SQL scripts (schema & data)
-└── pom.xml               # Maven configuration
-
-online-library/
-├── src/main/java/com/library/
-│ ├── dao/ # Data Access Objects
-│ ├── filter/ # Servlet Filters (Auth, Admin)
-│ ├── model/ # Entity classes
-│ ├── servlet/ # Servlets
-│ │ └── admin/ # Admin servlets
-│ └── util/ # Utility classes
-├── src/main/webapp/
-│ ├── admin/ # Admin JSP pages
-│ ├── css/ # Stylesheets
-│ ├── error/ # Error pages
-│ ├── includes/ # Reusable JSP components
-│ └── WEB-INF/ # Configuration files (web.xml, JSP sécurisées)
-├── database/ # SQL scripts (schema & data)
-└── pom.xml # Maven configuration
+│ ├── admin/ 
+│ ├── css/ 
+│ ├── error/
+│ ├── includes/ 
+│ └── WEB-INF/ 
+├── database/ 
+└── pom.xml 
 ## Features Breakdown
 
 ### Authentication & Authorization
