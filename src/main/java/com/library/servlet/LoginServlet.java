@@ -1,6 +1,7 @@
 package com.library.servlet;
 
 import com.library.dao.UserDAO;
+import com.library.metrics.PrometheusMetricsServlet;
 import com.library.model.User;
 import com.library.util.PasswordUtil;
 
@@ -25,7 +26,9 @@ public class LoginServlet extends HttpServlet {
         
         String username = request.getParameter("username");
         String password = request.getParameter("password");
-        
+
+        PrometheusMetricsServlet.incrementLoginAttempts();
+
         if (username == null || username.trim().isEmpty() || 
             password == null || password.trim().isEmpty()) {
             response.sendRedirect("login.jsp?error=Please fill in all fields");
@@ -35,6 +38,8 @@ public class LoginServlet extends HttpServlet {
         User user = userDAO.findByUsername(username);
         
         if (user != null && PasswordUtil.verifyPassword(password, user.getPassword())) {
+            PrometheusMetricsServlet.incrementSuccessfulLogins();
+
             HttpSession session = request.getSession();
             session.setAttribute("user", user);
             session.setMaxInactiveInterval(30 * 60); // 30 minutes

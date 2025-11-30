@@ -2,6 +2,7 @@ package com.library.servlet;
 
 import com.library.dao.BookDAO;
 import com.library.dao.BorrowingDAO;
+import com.library.metrics.PrometheusMetricsServlet;
 import com.library.model.Book;
 import com.library.model.Borrowing;
 import com.library.model.User;
@@ -88,6 +89,11 @@ public class BorrowServlet extends HttpServlet {
 
         boolean success = borrowingDAO.create(borrowing) && bookDAO.decreaseAvailableQuantity(bookId);
         if (success) {
+            PrometheusMetricsServlet.incrementBooksBorrowed();
+
+            // Update active borrowings count
+            int activeCount = borrowingDAO.getActiveBorrowingsCount();
+            PrometheusMetricsServlet.setActiveBorrowings(activeCount);
             response.sendRedirect("my-borrowings?success=Book borrowed successfully");
         } else {
             response.sendRedirect("book-detail?id=" + bookId + "&error=Failed to borrow book");

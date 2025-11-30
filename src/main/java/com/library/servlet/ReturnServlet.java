@@ -2,6 +2,7 @@ package com.library.servlet;
 
 import com.library.dao.BookDAO;
 import com.library.dao.BorrowingDAO;
+import com.library.metrics.PrometheusMetricsServlet;
 import com.library.model.Borrowing;
 import com.library.model.User;
 
@@ -66,6 +67,11 @@ public class ReturnServlet extends HttpServlet {
             Date returnDate = Date.valueOf(LocalDate.now());
             if (borrowingDAO.returnBook(borrowingId, returnDate) && 
                 bookDAO.increaseAvailableQuantity(borrowing.getBookId())) {
+                PrometheusMetricsServlet.incrementBooksReturned();
+
+                // Update active borrowings count
+                int activeCount = borrowingDAO.getActiveBorrowingsCount();
+                PrometheusMetricsServlet.setActiveBorrowings(activeCount);
                 response.sendRedirect("my-borrowings?success=Book returned successfully");
             } else {
                 response.sendRedirect("my-borrowings?error=Failed to return book");
