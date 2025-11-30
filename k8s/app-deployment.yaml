@@ -27,7 +27,7 @@ spec:
             - name: DB_URL
               value: "jdbc:mysql://mysql:3306/online_library?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
             - name: DB_USERNAME
-              value: "tarik"
+              value: "root"
             - name: DB_PASSWORD
               value: "tarik123"
           # FIX: Correct path with context root
