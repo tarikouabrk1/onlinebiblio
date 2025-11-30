@@ -21,6 +21,10 @@ spec:
               value: "tarik123"
             - name: MYSQL_DATABASE
               value: "online_library"
+            - name: MYSQL_USER
+              value: "tarik"
+            - name: MYSQL_PASSWORD
+              value: "tarik123"
           ports:
             - containerPort: 3306
           volumeMounts:
