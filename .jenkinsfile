@@ -138,18 +138,7 @@ pipeline {
                     }
                 }
 
-                stage('Initialize Database') {
-                    steps {
-                        echo "Initializing database manually..."
-                        bat "minikube kubectl -- exec -it deployment/mysql -n ${K8S_NAMESPACE} -- mysql -u root -ptarik123 -e \"DROP DATABASE IF EXISTS online_library; CREATE DATABASE online_library;\""
-                        bat "minikube kubectl -- exec -it deployment/mysql -n ${K8S_NAMESPACE} -- bash -c \"cat /docker-entrypoint-initdb.d/01-schema.sql | mysql -u root -ptarik123\""
-                        bat "minikube kubectl -- exec -it deployment/mysql -n ${K8S_NAMESPACE} -- bash -c \"cat /docker-entrypoint-initdb.d/02-seed.sql | mysql -u root -ptarik123\""
 
-                        // Mettre à jour l'application pour utiliser root
-                        bat "minikube kubectl -- set env deployment/${K8S_DEPLOYMENT_NAME} -n ${K8S_NAMESPACE} DB_USERNAME=root DB_PASSWORD=tarik123"
-                        bat "minikube kubectl -- rollout restart deployment/${K8S_DEPLOYMENT_NAME} -n ${K8S_NAMESPACE}"
-                    }
-                }
 
                 stage('Verify Deployment') {
                     steps {
