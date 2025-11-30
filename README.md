@@ -103,22 +103,29 @@ This will create a WAR file in the `target` directory.
 - **Username**: bob_wilson | **Password**: user123
 
 ## Project Structure
-online-library/
-|-- src/main/java/com/library/
-|   |-- dao/              # Data Access Objects
-|   |-- filter/           # Servlet Filters (Auth, Admin)
-|   |-- model/            # Entity classes
-|   |-- servlet/          # Servlets
-|   |   `-- admin/        # Admin servlets
-|   `-- util/             # Utility classes
-|-- src/main/webapp/
-|   |-- admin/            # Admin JSP pages
-|   |-- css/              # Stylesheets
-|   |-- error/            # Error pages
-|   |-- includes/         # Reusable JSP components
-|   `-- WEB-INF/          # Configuration files (web.xml, JSP sécurisées)
-|-- database/             # SQL scripts (schema & data)
-`-- pom.xml               # Maven configuration
+
+**Source Code** (`src/main/java/com/library/`)
+- `dao/` - Data Access Objects
+- `filter/` - Servlet Filters (Authentication, Admin)
+- `model/` - Entity classes (User, Book, Borrowing)
+- `servlet/` - HTTP Servlets
+  - `admin/` - Admin-specific servlets
+- `util/` - Utility classes (DatabaseConnection, PasswordUtil)
+
+**Web Application** (`src/main/webapp/`)
+- `admin/` - Admin dashboard JSP pages
+- `css/` - Stylesheets
+- `error/` - Error pages (404, 500)
+- `includes/` - Reusable components (header, footer)
+- `WEB-INF/` - Protected configuration files
+  - `web.xml` - Servlet and filter mappings
+
+**Database** (`database/`)
+- `schema.sql` - Database structure
+- `seed.sql` - Initial data (users, books)
+
+**Configuration**
+- `pom.xml` - Maven dependencies and build config
  
 ## Features Breakdown
 
