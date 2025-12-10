@@ -19,316 +19,271 @@ data:
 
   kubernetes-pods-dashboard.json: |
     {
-      "dashboard": {
-        "title": "Kubernetes Pods & Resources",
-        "uid": "k8s-pods",
-        "timezone": "browser",
-        "panels": [
-          {
-            "id": 1,
-            "title": "CPU Usage by Pod",
-            "type": "graph",
-            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
-            "targets": [
-              {
-                "expr": "rate(container_cpu_usage_seconds_total{namespace=\"online-library\", pod!=\"\"}[5m]) * 100",
-                "legendFormat": "{{pod}}",
-                "refId": "A"
-              }
-            ],
-            "yaxes": [
-              {"format": "percent", "label": "CPU %"},
-              {"format": "short"}
-            ]
-          },
-          {
-            "id": 2,
-            "title": "Memory Usage by Pod",
-            "type": "graph",
-            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
-            "targets": [
-              {
-                "expr": "container_memory_working_set_bytes{namespace=\"online-library\", pod!=\"\"} / 1024 / 1024",
-                "legendFormat": "{{pod}}",
-                "refId": "A"
-              }
-            ],
-            "yaxes": [
-              {"format": "decmbytes", "label": "Memory (MB)"},
-              {"format": "short"}
-            ]
-          },
-          {
-            "id": 3,
-            "title": "Pod Restarts",
-            "type": "stat",
-            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 8},
-            "targets": [
-              {
-                "expr": "sum(kube_pod_container_status_restarts_total{namespace=\"online-library\"})",
-                "refId": "A"
-              }
-            ]
-          },
-          {
-            "id": 4,
-            "title": "Running Pods",
-            "type": "stat",
-            "gridPos": {"h": 4, "w": 6, "x": 6, "y": 8},
-            "targets": [
-              {
-                "expr": "count(kube_pod_info{namespace=\"online-library\"})",
-                "refId": "A"
-              }
-            ]
-          },
-          {
-            "id": 5,
-            "title": "Pod Status",
-            "type": "table",
-            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
-            "targets": [
-              {
-                "expr": "kube_pod_status_phase{namespace=\"online-library\"}",
-                "format": "table",
-                "instant": true,
-                "refId": "A"
-              }
-            ],
-            "transformations": [
-              {
-                "id": "organize",
-                "options": {
-                  "excludeByName": {
-                    "Time": true,
-                    "job": true,
-                    "namespace": true,
-                    "uid": true
-                  },
-                  "indexByName": {},
-                  "renameByName": {
-                    "pod": "Pod Name",
-                    "phase": "Status",
-                    "Value": "Active"
-                  }
-                }
-              }
-            ]
-          },
-          {
-            "id": 6,
-            "title": "Network IO - Received",
-            "type": "graph",
-            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
-            "targets": [
-              {
-                "expr": "rate(container_network_receive_bytes_total{namespace=\"online-library\"}[5m]) / 1024",
-                "legendFormat": "{{pod}}",
-                "refId": "A"
-              }
-            ],
-            "yaxes": [
-              {"format": "decKBs", "label": "KB/s"},
-              {"format": "short"}
-            ]
-          },
-          {
-            "id": 7,
-            "title": "Disk Usage",
-            "type": "gauge",
-            "gridPos": {"h": 6, "w": 6, "x": 12, "y": 8},
-            "targets": [
-              {
-                "expr": "(1 - (node_filesystem_avail_bytes{mountpoint=\"/\"} / node_filesystem_size_bytes{mountpoint=\"/\"})) * 100",
-                "refId": "A"
-              }
-            ],
-            "fieldConfig": {
-              "defaults": {
-                "unit": "percent",
-                "min": 0,
-                "max": 100,
-                "thresholds": {
-                  "mode": "absolute",
-                  "steps": [
-                    {"value": 0, "color": "green"},
-                    {"value": 70, "color": "yellow"},
-                    {"value": 90, "color": "red"}
-                  ]
+      "title": "Kubernetes Pods & Resources",
+      "uid": "k8s-pods",
+      "timezone": "browser",
+      "schemaVersion": 36,
+      "version": 1,
+      "refresh": "10s",
+      "panels": [
+        {
+          "id": 1,
+          "title": "CPU Usage by Pod",
+          "type": "graph",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+          "targets": [
+            {
+              "expr": "rate(container_cpu_usage_seconds_total{namespace=\"online-library\", pod!=\"\"}[5m]) * 100",
+              "legendFormat": "{{pod}}",
+              "refId": "A"
+            }
+          ],
+          "yaxes": [
+            {"format": "percent", "label": "CPU %"},
+            {"format": "short"}
+          ]
+        },
+        {
+          "id": 2,
+          "title": "Memory Usage by Pod",
+          "type": "graph",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+          "targets": [
+            {
+              "expr": "container_memory_working_set_bytes{namespace=\"online-library\", pod!=\"\"} / 1024 / 1024",
+              "legendFormat": "{{pod}}",
+              "refId": "A"
+            }
+          ],
+          "yaxes": [
+            {"format": "decmbytes", "label": "Memory (MB)"},
+            {"format": "short"}
+          ]
+        },
+        {
+          "id": 3,
+          "title": "Pod Restarts",
+          "type": "stat",
+          "gridPos": {"h": 4, "w": 6, "x": 0, "y": 8},
+          "targets": [
+            {
+              "expr": "sum(kube_pod_container_status_restarts_total{namespace=\"online-library\"})",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "title": "Running Pods",
+          "type": "stat",
+          "gridPos": {"h": 4, "w": 6, "x": 6, "y": 8},
+          "targets": [
+            {
+              "expr": "count(kube_pod_info{namespace=\"online-library\"})",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "title": "Pod Status",
+          "type": "table",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+          "targets": [
+            {
+              "expr": "kube_pod_status_phase{namespace=\"online-library\"}",
+              "format": "table",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": true,
+                  "job": true,
+                  "namespace": true,
+                  "uid": true
+                },
+                "renameByName": {
+                  "pod": "Pod Name",
+                  "phase": "Status",
+                  "Value": "Active"
                 }
               }
             }
-          },
-          {
-            "id": 8,
-            "title": "Pod Memory Limits",
-            "type": "bar",
-            "gridPos": {"h": 6, "w": 6, "x": 18, "y": 8},
-            "targets": [
-              {
-                "expr": "kube_pod_container_resource_limits{namespace=\"online-library\", resource=\"memory\"} / 1024 / 1024",
-                "legendFormat": "{{pod}}",
-                "refId": "A"
-              }
-            ]
-          }
-        ],
-        "refresh": "10s",
-        "schemaVersion": 36,
-        "version": 1
-      }
+          ]
+        },
+        {
+          "id": 6,
+          "title": "Network IO - Received",
+          "type": "graph",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
+          "targets": [
+            {
+              "expr": "rate(container_network_receive_bytes_total{namespace=\"online-library\"}[5m]) / 1024",
+              "legendFormat": "{{pod}}",
+              "refId": "A"
+            }
+          ],
+          "yaxes": [
+            {"format": "decKBs", "label": "KB/s"},
+            {"format": "short"}
+          ]
+        }
+      ]
     }
 
   library-metrics-dashboard.json: |
     {
-      "dashboard": {
-        "title": "Online Library - Business Metrics",
-        "uid": "library-metrics",
-        "timezone": "browser",
-        "panels": [
-          {
-            "id": 1,
-            "title": "Total Login Attempts",
-            "type": "stat",
-            "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
-            "targets": [
-              {
-                "expr": "library_login_attempts_total",
-                "refId": "A"
-              }
-            ],
-            "fieldConfig": {
-              "defaults": {
-                "color": {"mode": "thresholds"},
-                "thresholds": {
-                  "mode": "absolute",
-                  "steps": [
-                    {"value": 0, "color": "green"}
-                  ]
-                }
+      "title": "Online Library - Business Metrics",
+      "uid": "library-metrics",
+      "timezone": "browser",
+      "schemaVersion": 36,
+      "version": 1,
+      "refresh": "10s",
+      "panels": [
+        {
+          "id": 1,
+          "title": "Total Login Attempts",
+          "type": "stat",
+          "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
+          "targets": [
+            {
+              "expr": "library_login_attempts_total",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"value": 0, "color": "green"}
+                ]
               }
             }
-          },
-          {
-            "id": 2,
-            "title": "Successful Logins",
-            "type": "stat",
-            "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0},
-            "targets": [
-              {
-                "expr": "library_successful_logins_total",
-                "refId": "A"
-              }
-            ],
-            "fieldConfig": {
-              "defaults": {
-                "color": {"mode": "palette-classic"}
-              }
-            }
-          },
-          {
-            "id": 3,
-            "title": "Books Borrowed",
-            "type": "stat",
-            "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0},
-            "targets": [
-              {
-                "expr": "library_books_borrowed_total",
-                "refId": "A"
-              }
-            ]
-          },
-          {
-            "id": 4,
-            "title": "Books Returned",
-            "type": "stat",
-            "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0},
-            "targets": [
-              {
-                "expr": "library_books_returned_total",
-                "refId": "A"
-              }
-            ]
-          },
-          {
-            "id": 5,
-            "title": "Active Borrowings Over Time",
-            "type": "graph",
-            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6},
-            "targets": [
-              {
-                "expr": "library_active_borrowings",
-                "legendFormat": "Active Borrowings",
-                "refId": "A"
-              }
-            ]
-          },
-          {
-            "id": 6,
-            "title": "Login Success Rate",
-            "type": "gauge",
-            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6},
-            "targets": [
-              {
-                "expr": "(library_successful_logins_total / library_login_attempts_total) * 100",
-                "refId": "A"
-              }
-            ],
-            "fieldConfig": {
-              "defaults": {
-                "unit": "percent",
-                "min": 0,
-                "max": 100,
-                "thresholds": {
-                  "mode": "absolute",
-                  "steps": [
-                    {"value": 0, "color": "red"},
-                    {"value": 50, "color": "yellow"},
-                    {"value": 80, "color": "green"}
-                  ]
-                }
-              }
-            }
-          },
-          {
-            "id": 7,
-            "title": "Login Rate (per minute)",
-            "type": "graph",
-            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 14},
-            "targets": [
-              {
-                "expr": "rate(library_login_attempts_total[1m]) * 60",
-                "legendFormat": "Login Attempts/min",
-                "refId": "A"
-              },
-              {
-                "expr": "rate(library_successful_logins_total[1m]) * 60",
-                "legendFormat": "Successful Logins/min",
-                "refId": "B"
-              }
-            ]
-          },
-          {
-            "id": 8,
-            "title": "Borrow/Return Activity",
-            "type": "graph",
-            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 14},
-            "targets": [
-              {
-                "expr": "rate(library_books_borrowed_total[5m]) * 60",
-                "legendFormat": "Borrowed/min",
-                "refId": "A"
-              },
-              {
-                "expr": "rate(library_books_returned_total[5m]) * 60",
-                "legendFormat": "Returned/min",
-                "refId": "B"
-              }
-            ]
           }
-        ],
-        "refresh": "10s",
-        "schemaVersion": 36,
-        "version": 1
-      }
+        },
+        {
+          "id": 2,
+          "title": "Successful Logins",
+          "type": "stat",
+          "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0},
+          "targets": [
+            {
+              "expr": "library_successful_logins_total",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"}
+            }
+          }
+        },
+        {
+          "id": 3,
+          "title": "Books Borrowed",
+          "type": "stat",
+          "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0},
+          "targets": [
+            {
+              "expr": "library_books_borrowed_total",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "title": "Books Returned",
+          "type": "stat",
+          "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0},
+          "targets": [
+            {
+              "expr": "library_books_returned_total",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "title": "Active Borrowings Over Time",
+          "type": "graph",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6},
+          "targets": [
+            {
+              "expr": "library_active_borrowings",
+              "legendFormat": "Active Borrowings",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "title": "Login Success Rate",
+          "type": "gauge",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6},
+          "targets": [
+            {
+              "expr": "(library_successful_logins_total / library_login_attempts_total) * 100",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0,
+              "max": 100,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"value": 0, "color": "red"},
+                  {"value": 50, "color": "yellow"},
+                  {"value": 80, "color": "green"}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "id": 7,
+          "title": "Login Rate (per minute)",
+          "type": "graph",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 14},
+          "targets": [
+            {
+              "expr": "rate(library_login_attempts_total[1m]) * 60",
+              "legendFormat": "Login Attempts/min",
+              "refId": "A"
+            },
+            {
+              "expr": "rate(library_successful_logins_total[1m]) * 60",
+              "legendFormat": "Successful Logins/min",
+              "refId": "B"
+            }
+          ]
+        },
+        {
+          "id": 8,
+          "title": "Borrow/Return Activity",
+          "type": "graph",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 14},
+          "targets": [
+            {
+              "expr": "rate(library_books_borrowed_total[5m]) * 60",
+              "legendFormat": "Borrowed/min",
+              "refId": "A"
+            },
+            {
+              "expr": "rate(library_books_returned_total[5m]) * 60",
+              "legendFormat": "Returned/min",
+              "refId": "B"
+            }
+          ]
+        }
+      ]
     }
