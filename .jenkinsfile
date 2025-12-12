@@ -133,6 +133,7 @@ pipeline {
                 // Deploy Monitoring Stack
                 echo "Deploying Prometheus and Grafana..."
 
+                bat "minikube kubectl -- apply -f k8s/cadvisor-daemonset.yaml --validate=false"  //
                 bat "minikube kubectl -- apply -f k8s/kube-state-metrics.yaml --validate=false"
                 bat "minikube kubectl -- apply -f k8s/prometheus-config.yaml --validate=false"
                 bat "minikube kubectl -- apply -f k8s/prometheus-deployment.yaml --validate=false"
