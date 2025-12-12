@@ -33,7 +33,7 @@ data:
           "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
           "targets": [
             {
-              "expr": "rate(container_cpu_usage_seconds_total{namespace=\"online-library\", pod!=\"\"}[5m]) * 100",
+              "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"online-library\", container!=\"\", container!=\"POD\"}[5m])) by (pod) * 100",
               "legendFormat": "{{pod}}",
               "refId": "A"
             }
@@ -41,7 +41,8 @@ data:
           "yaxes": [
             {"format": "percent", "label": "CPU %"},
             {"format": "short"}
-          ]
+          ],
+          "legend": {"show": true}
         },
         {
           "id": 2,
@@ -50,7 +51,7 @@ data:
           "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
           "targets": [
             {
-              "expr": "container_memory_working_set_bytes{namespace=\"online-library\", pod!=\"\"} / 1024 / 1024",
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"online-library\", container!=\"\", container!=\"POD\"}) by (pod) / 1024 / 1024",
               "legendFormat": "{{pod}}",
               "refId": "A"
             }
@@ -58,7 +59,8 @@ data:
           "yaxes": [
             {"format": "decmbytes", "label": "Memory (MB)"},
             {"format": "short"}
-          ]
+          ],
+          "legend": {"show": true}
         },
         {
           "id": 3,
@@ -70,7 +72,19 @@ data:
               "expr": "sum(kube_pod_container_status_restarts_total{namespace=\"online-library\"})",
               "refId": "A"
             }
-          ]
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"value": 0, "color": "green"},
+                  {"value": 1, "color": "yellow"},
+                  {"value": 5, "color": "red"}
+                ]
+              }
+            }
+          }
         },
         {
           "id": 4,
@@ -82,7 +96,19 @@ data:
               "expr": "count(kube_pod_info{namespace=\"online-library\"})",
               "refId": "A"
             }
-          ]
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"value": 0, "color": "red"},
+                  {"value": 1, "color": "green"}
+                ]
+              }
+            }
+          }
         },
         {
           "id": 5,
@@ -105,7 +131,9 @@ data:
                   "Time": true,
                   "job": true,
                   "namespace": true,
-                  "uid": true
+                  "uid": true,
+                  "__name__": true,
+                  "instance": true
                 },
                 "renameByName": {
                   "pod": "Pod Name",
@@ -123,15 +151,52 @@ data:
           "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
           "targets": [
             {
-              "expr": "rate(container_network_receive_bytes_total{namespace=\"online-library\"}[5m]) / 1024",
+              "expr": "sum(rate(container_network_receive_bytes_total{namespace=\"online-library\"}[5m])) by (pod) / 1024",
               "legendFormat": "{{pod}}",
               "refId": "A"
             }
           ],
           "yaxes": [
-            {"format": "decKBs", "label": "KB/s"},
+            {"format": "KBs", "label": "KB/s"},
             {"format": "short"}
-          ]
+          ],
+          "legend": {"show": true}
+        },
+        {
+          "id": 7,
+          "title": "Network IO - Transmitted",
+          "type": "graph",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 20},
+          "targets": [
+            {
+              "expr": "sum(rate(container_network_transmit_bytes_total{namespace=\"online-library\"}[5m])) by (pod) / 1024",
+              "legendFormat": "{{pod}}",
+              "refId": "A"
+            }
+          ],
+          "yaxes": [
+            {"format": "KBs", "label": "KB/s"},
+            {"format": "short"}
+          ],
+          "legend": {"show": true}
+        },
+        {
+          "id": 8,
+          "title": "Disk I/O - Read",
+          "type": "graph",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 20},
+          "targets": [
+            {
+              "expr": "sum(rate(container_fs_reads_bytes_total{namespace=\"online-library\", container!=\"\"}[5m])) by (pod) / 1024 / 1024",
+              "legendFormat": "{{pod}}",
+              "refId": "A"
+            }
+          ],
+          "yaxes": [
+            {"format": "MBs", "label": "MB/s"},
+            {"format": "short"}
+          ],
+          "legend": {"show": true}
         }
       ]
     }
