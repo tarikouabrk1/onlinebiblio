@@ -121,7 +121,6 @@ data:
     INSERT INTO borrowings (user_id, book_id, borrow_date, due_date, status) VALUES
             (2, 1, DATE_SUB(CURDATE(), INTERVAL 5 DAY), DATE_ADD(CURDATE(), INTERVAL 9 DAY), 'BORROWED'),
             (2, 3, DATE_SUB(CURDATE(), INTERVAL 3 DAY), DATE_ADD(CURDATE(), INTERVAL 11 DAY), 'BORROWED'),
-            (3, 6, DATE_SUB(CURDATE(), INTERVAL 10 DAY), DATE_SUB(CURDATE(), INTERVAL 3 DAY), 'RETURNED'),
             (4, 10, DATE_SUB(CURDATE(), INTERVAL 7 DAY), DATE_ADD(CURDATE(), INTERVAL 7 DAY), 'BORROWED');
 
     -- Update available quantities based on borrowings
