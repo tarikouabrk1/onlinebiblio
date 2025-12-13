@@ -33,8 +33,8 @@ data:
           "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
           "targets": [
             {
-              "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"online-library\", container!=\"\", container!=\"POD\"}[5m])) by (pod) * 100",
-              "legendFormat": "{{pod}}",
+              "expr": "sum(rate(container_cpu_usage_seconds_total{container_label_io_kubernetes_pod_namespace=\"online-library\", container_label_io_kubernetes_container_name!=\"POD\", container_label_io_kubernetes_container_name!=\"\"}[5m])) by (container_label_io_kubernetes_pod_name) * 100",
+              "legendFormat": "{{container_label_io_kubernetes_pod_name}}",
               "refId": "A"
             }
           ],
@@ -51,8 +51,8 @@ data:
           "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
           "targets": [
             {
-              "expr": "sum(container_memory_working_set_bytes{namespace=\"online-library\", container!=\"\", container!=\"POD\"}) by (pod) / 1024 / 1024",
-              "legendFormat": "{{pod}}",
+              "expr": "sum(container_memory_working_set_bytes{container_label_io_kubernetes_pod_namespace=\"online-library\", container_label_io_kubernetes_container_name!=\"POD\", container_label_io_kubernetes_container_name!=\"\"}) by (container_label_io_kubernetes_pod_name) / 1024 / 1024",
+              "legendFormat": "{{container_label_io_kubernetes_pod_name}}",
               "refId": "A"
             }
           ],
@@ -132,7 +132,7 @@ data:
                   "job": true,
                   "namespace": true,
                   "uid": true,
-                  "__name__": true,
+                  "_name_": true,
                   "instance": true
                 },
                 "renameByName": {
@@ -151,8 +151,8 @@ data:
           "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
           "targets": [
             {
-              "expr": "sum(rate(container_network_receive_bytes_total{namespace=\"online-library\"}[5m])) by (pod) / 1024",
-              "legendFormat": "{{pod}}",
+              "expr": "sum(rate(container_network_receive_bytes_total{container_label_io_kubernetes_pod_namespace=\"online-library\"}[5m])) by (container_label_io_kubernetes_pod_name) / 1024",
+              "legendFormat": "{{container_label_io_kubernetes_pod_name}}",
               "refId": "A"
             }
           ],
@@ -169,8 +169,8 @@ data:
           "gridPos": {"h": 8, "w": 12, "x": 0, "y": 20},
           "targets": [
             {
-              "expr": "sum(rate(container_network_transmit_bytes_total{namespace=\"online-library\"}[5m])) by (pod) / 1024",
-              "legendFormat": "{{pod}}",
+              "expr": "sum(rate(container_network_transmit_bytes_total{container_label_io_kubernetes_pod_namespace=\"online-library\"}[5m])) by (container_label_io_kubernetes_pod_name) / 1024",
+              "legendFormat": "{{container_label_io_kubernetes_pod_name}}",
               "refId": "A"
             }
           ],
@@ -187,8 +187,8 @@ data:
           "gridPos": {"h": 8, "w": 12, "x": 12, "y": 20},
           "targets": [
             {
-              "expr": "sum(rate(container_fs_reads_bytes_total{namespace=\"online-library\", container!=\"\"}[5m])) by (pod) / 1024 / 1024",
-              "legendFormat": "{{pod}}",
+              "expr": "sum(rate(container_fs_reads_bytes_total{container_label_io_kubernetes_pod_namespace=\"online-library\", container_label_io_kubernetes_container_name!=\"\"}[5m])) by (container_label_io_kubernetes_pod_name) / 1024 / 1024",
+              "legendFormat": "{{container_label_io_kubernetes_pod_name}}",
               "refId": "A"
             }
           ],
