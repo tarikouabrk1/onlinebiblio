@@ -17,6 +17,7 @@ public class PrometheusMetricsServlet extends HttpServlet {
 
     private static final PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
 
+
     // Business Metrics
     private static final Counter loginAttempts = Counter.builder("library_login_attempts_total")
             .description("Total number of login attempts")
