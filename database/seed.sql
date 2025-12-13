@@ -8,9 +8,9 @@ INSERT INTO users (username, email, password, full_name, role) VALUES
 
 -- Insert Sample Users (password: user123)
 INSERT INTO users (username, email, password, full_name, role) VALUES
-('john_doe', 'john@example.com', '6ca13d52ca70c883e0f0bb101e425a89e8624de51db2d2392593af6a84118090', 'John Doe', 'USER'),
-('jane_smith', 'jane@example.com', '6ca13d52ca70c883e0f0bb101e425a89e8624de51db2d2392593af6a84118090', 'Jane Smith', 'USER'),
-('bob_wilson', 'bob@example.com', '6ca13d52ca70c883e0f0bb101e425a89e8624de51db2d2392593af6a84118090', 'Bob Wilson', 'USER');
+('john_doe', 'john@example.com', 'e606e38b0d8c19b24cf0ee3808183162ea7cd63ff7912dbb22b5e803286b4446', 'John Doe', 'USER'),
+('jane_smith', 'jane@example.com', 'e606e38b0d8c19b24cf0ee3808183162ea7cd63ff7912dbb22b5e803286b4446', 'Jane Smith', 'USER'),
+('bob_wilson', 'bob@example.com', 'e606e38b0d8c19b24cf0ee3808183162ea7cd63ff7912dbb22b5e803286b4446', 'Bob Wilson', 'USER');
 
 -- Insert Sample Books
 INSERT INTO books (title, author, isbn, category, description, publisher, published_year, pages, language, quantity, available_quantity, cover_image) VALUES
@@ -39,7 +39,6 @@ INSERT INTO books (title, author, isbn, category, description, publisher, publis
 INSERT INTO borrowings (user_id, book_id, borrow_date, due_date, status) VALUES
 (2, 1, DATE_SUB(CURDATE(), INTERVAL 5 DAY), DATE_ADD(CURDATE(), INTERVAL 9 DAY), 'BORROWED'),
 (2, 3, DATE_SUB(CURDATE(), INTERVAL 3 DAY), DATE_ADD(CURDATE(), INTERVAL 11 DAY), 'BORROWED'),
-(3, 6, DATE_SUB(CURDATE(), INTERVAL 10 DAY), DATE_SUB(CURDATE(), INTERVAL 3 DAY), 'RETURNED'),
 (4, 10, DATE_SUB(CURDATE(), INTERVAL 7 DAY), DATE_ADD(CURDATE(), INTERVAL 7 DAY), 'BORROWED');
 
 -- Update available quantities based on borrowings
