@@ -111,6 +111,8 @@ pipeline {
                 // RBAC (AVANT les déploiements qui en ont besoin)
                 bat "minikube kubectl -- apply -f k8s/prometheus-rbac.yaml --validate=false"
 
+                bat "minikube kubectl -- apply -f k8s/mysql-secret.yaml --validate=false"
+
                 // ConfigMaps & Secrets
                 bat "minikube kubectl -- apply -f k8s/mysql-init-configmap.yaml --validate=false"
                 bat "minikube kubectl -- apply -f k8s/prometheus-config.yaml --validate=false"
