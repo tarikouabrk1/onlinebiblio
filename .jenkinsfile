@@ -102,64 +102,54 @@ pipeline {
             }
         }
         stage('Deploy to Kubernetes') {
-    steps {
-        echo "Deploying to Kubernetes..."
+            steps {
+                echo "Deploying to Kubernetes..."
 
-        // 1️⃣ Namespace
-        bat "minikube kubectl -- apply -f k8s/namespace.yaml --validate=false"
+                // 1 Infrastructure de base
+                bat "minikube kubectl -- apply -f k8s/namespace.yaml --validate=false"
 
-        // 2️⃣ RBAC
-        bat "minikube kubectl -- apply -f k8s/prometheus-rbac.yaml --validate=false"
+                // RBAC (AVANT les déploiements qui en ont besoin)
+                bat "minikube kubectl -- apply -f k8s/prometheus-rbac.yaml --validate=false"
 
-        // 3️⃣ Secrets & ConfigMaps
-        bat "minikube kubectl -- apply -f k8s/mysql-secret.yaml --validate=false"
-        bat "minikube kubectl -- apply -f k8s/mysql-init-configmap.yaml --validate=false"
-        bat "minikube kubectl -- apply -f k8s/prometheus-config.yaml --validate=false"
-        bat "minikube kubectl -- apply -f k8s/grafana-datasources.yaml --validate=false"
-        bat "minikube kubectl -- apply -f k8s/grafana-dashboard.yaml --validate=false"
+                bat "minikube kubectl -- apply -f k8s/mysql-secret.yaml --validate=false"
 
-        // 4️⃣ Storage
-        bat "minikube kubectl -- apply -f k8s/mysql-pvc.yaml --validate=false"
+                // ConfigMaps & Secrets
+                bat "minikube kubectl -- apply -f k8s/mysql-init-configmap.yaml --validate=false"
+                bat "minikube kubectl -- apply -f k8s/prometheus-config.yaml --validate=false"
+                bat "minikube kubectl -- apply -f k8s/grafana-datasources.yaml --validate=false"
+                bat "minikube kubectl -- apply -f k8s/grafana-dashboard.yaml --validate=false"
 
-        // 5️⃣ Déploiement MySQL
-        bat "minikube kubectl -- apply -f k8s/mysql-deployment.yaml --validate=false"
-        bat "minikube kubectl -- apply -f k8s/mysql-service.yaml --validate=false"
+                // Storage
+                bat "minikube kubectl -- apply -f k8s/mysql-pvc.yaml --validate=false"
 
-        // ⏳ Attente que MySQL soit prêt
-        echo "Waiting for MySQL pod to be ready..."
-        script {
-            def ready = false
-            for (int i = 0; i < 36; i++) { // max 36*5 = 180 sec
-                def status = bat(script: "minikube kubectl -- get pods -l app=mysql -n ${K8S_NAMESPACE} -o jsonpath=\"{.items[0].status.containerStatuses[0].ready}\"", returnStdout: true).trim()
-                if (status == "true") {
-                    ready = true
-                    echo "MySQL pod is ready!"
-                    break
-                }
-                echo "Waiting 5 seconds..."
-                sleep(time: 5, unit: 'SECONDS')
+                // Base de données
+                bat "minikube kubectl -- apply -f k8s/mysql-deployment.yaml --validate=false"
+                bat "minikube kubectl -- apply -f k8s/mysql-service.yaml --validate=false"
+
+                echo "Waiting for MySQL to be ready..."
+                bat "minikube kubectl -- wait --for=condition=ready pod -l app=mysql -n ${K8S_NAMESPACE} --timeout=180s"
+                sleep(time: 15, unit: 'SECONDS')
+
+                // Application
+                bat "minikube kubectl -- apply -f k8s/app-deployment.yaml --validate=false"
+                bat "minikube kubectl -- apply -f k8s/app-service.yaml --validate=false"
+                bat "minikube kubectl -- set image deployment/${K8S_DEPLOYMENT_NAME} online-library=${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG} -n ${K8S_NAMESPACE}"
+                bat "minikube kubectl -- rollout status deployment/${K8S_DEPLOYMENT_NAME} -n ${K8S_NAMESPACE} --timeout=180s"
+
+                // Monitoring Stack (avec RBAC déjà appliqué)
+                echo "Deploying Monitoring Stack..."
+                bat "minikube kubectl -- apply -f k8s/kube-state-metrics.yaml --validate=false"
+                bat "minikube kubectl -- apply -f k8s/cadvisor-daemonset.yaml --validate=false"
+                bat "minikube kubectl -- apply -f k8s/prometheus-deployment.yaml --validate=false"
+                bat "minikube kubectl -- apply -f k8s/grafana-deployment.yaml --validate=false"
+
+                //ingress
+                bat "minikube kubectl -- apply -f k8s/ingress.yaml --validate=false"
+
+
+
             }
-            if (!ready) error "MySQL pod not ready in time!"
         }
-
-        // 6️⃣ Déploiement de l'application
-        bat "minikube kubectl -- apply -f k8s/app-deployment.yaml --validate=false"
-        bat "minikube kubectl -- apply -f k8s/app-service.yaml --validate=false"
-        bat "minikube kubectl -- set image deployment/${K8S_DEPLOYMENT_NAME} online-library=${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG} -n ${K8S_NAMESPACE}"
-        bat "minikube kubectl -- rollout status deployment/${K8S_DEPLOYMENT_NAME} -n ${K8S_NAMESPACE} --timeout=180s"
-
-        // 7️⃣ Monitoring Stack
-        echo "Deploying Monitoring Stack..."
-        bat "minikube kubectl -- apply -f k8s/kube-state-metrics.yaml --validate=false"
-        bat "minikube kubectl -- apply -f k8s/cadvisor-daemonset.yaml --validate=false"
-        bat "minikube kubectl -- apply -f k8s/prometheus-deployment.yaml --validate=false"
-        bat "minikube kubectl -- apply -f k8s/grafana-deployment.yaml --validate=false"
-
-        // 8️⃣ Ingress
-        bat "minikube kubectl -- apply -f k8s/ingress.yaml --validate=false"
-    }
-}
-
 
         stage('Verify Deployment') {
             steps {
