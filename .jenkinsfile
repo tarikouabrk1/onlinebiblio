@@ -176,6 +176,8 @@ pipeline {
         }
         always {
             echo "Pipeline finished."
+            echo "Publishing JUnit test results..."
+            junit 'target/surefire-reports/*.xml'
             bat "docker image prune -f"
         }
     }
