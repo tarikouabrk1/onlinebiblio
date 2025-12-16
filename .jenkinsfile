@@ -130,7 +130,8 @@ pipeline {
 
                 echo "Waiting for MySQL to be ready..."
                 bat "minikube kubectl -- wait --for=condition=ready pod -l app=mysql -n %K8S_NAMESPACE% --timeout=300s"
-                bat "timeout /t 15 /nobreak"
+                bat "ping 127.0.0.1 -n 16 > nul"
+
 
                 // 7. Application
                 bat "minikube kubectl -- apply -f k8s/app-deployment.yaml --validate=false"
