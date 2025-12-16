@@ -6,7 +6,6 @@ pipeline {
         DB_USERNAME = "root"
         DB_PASSWORD = "tarik123"
         DB_URL = "jdbc:mysql://mysql:3306/online_library?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
-        KUBECONFIG = "C:\\Users\\PC\\.kube\\config"
 
         // Docker
         DOCKER_IMAGE = "onlinebiblio"
@@ -16,7 +15,6 @@ pipeline {
         // Kubernetes
         K8S_NAMESPACE = "online-library"
         K8S_DEPLOYMENT_NAME = "online-library"
-        K8S_SERVICE_NAME = "online-library-service"
     }
 
     stages {
@@ -61,16 +59,18 @@ pipeline {
             }
             steps {
                 withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
-                    bat "\"${SCANNER_HOME}\\bin\\sonar-scanner.bat\" " +
-                        "-Dsonar.projectKey=onlinebiblio " +
-                        "-Dsonar.projectName=OnlineBiblio " +
-                        "-Dsonar.sources=src/main/java " +
-                        "-Dsonar.tests=src/test/java " +
-                        "-Dsonar.java.binaries=target/classes " +
-                        "-Dsonar.java.libraries=target/dependency/*.jar " +
-                        "-Dsonar.coverage.jacoco.xmlReportPaths=target/jacoco-report/jacoco.xml " +
-                        "-Dsonar.host.url=http://localhost:9000 " +
-                        "-Dsonar.token=%SONAR_AUTH_TOKEN%"
+                    bat """
+                        "%SCANNER_HOME%\\bin\\sonar-scanner.bat" ^
+                        -Dsonar.projectKey=onlinebiblio ^
+                        -Dsonar.projectName=OnlineBiblio ^
+                        -Dsonar.sources=src/main/java ^
+                        -Dsonar.tests=src/test/java ^
+                        -Dsonar.java.binaries=target/classes ^
+                        -Dsonar.java.libraries=target/dependency/*.jar ^
+                        -Dsonar.coverage.jacoco.xmlReportPaths=target/jacoco-report/jacoco.xml ^
+                        -Dsonar.host.url=http://localhost:9000 ^
+                        -Dsonar.token=%SONAR_AUTH_TOKEN%
+                    """
                 }
             }
         }
@@ -78,85 +78,82 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo "Building Docker image..."
-                bat "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
-                bat "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
+                bat "docker build -t %DOCKER_IMAGE%:%DOCKER_TAG% ."
+                bat "docker tag %DOCKER_IMAGE%:%DOCKER_TAG% %DOCKER_IMAGE%:latest"
             }
         }
 
         stage('Push to Docker Registry') {
             steps {
                 echo "Pushing Docker image to Docker Hub..."
-                script {
-                    withCredentials([usernamePassword(
-                        credentialsId: 'docker-hub-credentials',
-                        usernameVariable: 'DOCKER_USER',
-                        passwordVariable: 'DOCKER_PASS'
-                    )]) {
-                        bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
-                        bat "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}"
-                        bat "docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}"
-                        bat "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest"
-                        bat "docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest"
-                    }
+                withCredentials([usernamePassword(
+                    credentialsId: 'docker-hub-credentials',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
+                    bat "docker tag %DOCKER_IMAGE%:%DOCKER_TAG% %DOCKER_REGISTRY%/%DOCKER_IMAGE%:%DOCKER_TAG%"
+                    bat "docker push %DOCKER_REGISTRY%/%DOCKER_IMAGE%:%DOCKER_TAG%"
+                    bat "docker tag %DOCKER_IMAGE%:%DOCKER_TAG% %DOCKER_REGISTRY%/%DOCKER_IMAGE%:latest"
+                    bat "docker push %DOCKER_REGISTRY%/%DOCKER_IMAGE%:latest"
                 }
             }
         }
+
         stage('Deploy to Kubernetes') {
             steps {
                 echo "Deploying to Kubernetes..."
 
-                // 1 Infrastructure de base
-                bat "minikube kubectl -- apply -f k8s/namespace.yaml --validate=false"
+                // 1️⃣ Namespace
+                bat "minikube kubectl -- apply -f k8s/namespace.yaml"
 
-                // RBAC (AVANT les déploiements qui en ont besoin)
-                bat "minikube kubectl -- apply -f k8s/prometheus-rbac.yaml --validate=false"
+                // 2️⃣ RBAC
+                bat "minikube kubectl -- apply -f k8s/prometheus-rbac.yaml"
 
-                bat "minikube kubectl -- apply -f k8s/mysql-secret.yaml --validate=false"
+                // 3️⃣ Secrets
+                bat "minikube kubectl -- apply -f k8s/mysql-secret.yaml"
 
-                // ConfigMaps & Secrets
-                bat "minikube kubectl -- apply -f k8s/mysql-init-configmap.yaml --validate=false"
-                bat "minikube kubectl -- apply -f k8s/prometheus-config.yaml --validate=false"
-                bat "minikube kubectl -- apply -f k8s/grafana-datasources.yaml --validate=false"
-                bat "minikube kubectl -- apply -f k8s/grafana-dashboard.yaml --validate=false"
+                // 4️⃣ ConfigMaps
+                bat "minikube kubectl -- apply -f k8s/mysql-init-configmap.yaml"
+                bat "minikube kubectl -- apply -f k8s/prometheus-config.yaml"
+                bat "minikube kubectl -- apply -f k8s/grafana-datasources.yaml"
+                bat "minikube kubectl -- apply -f k8s/grafana-dashboard.yaml"
 
-                // Storage
-                bat "minikube kubectl -- apply -f k8s/mysql-pvc.yaml --validate=false"
+                // 5️⃣ Storage
+                bat "minikube kubectl -- apply -f k8s/mysql-pvc.yaml"
 
-                // Base de données
-                bat "minikube kubectl -- apply -f k8s/mysql-deployment.yaml --validate=false"
-                bat "minikube kubectl -- apply -f k8s/mysql-service.yaml --validate=false"
+                // 6️⃣ Base de données
+                bat "minikube kubectl -- apply -f k8s/mysql-deployment.yaml"
+                bat "minikube kubectl -- apply -f k8s/mysql-service.yaml"
 
                 echo "Waiting for MySQL to be ready..."
-                bat "minikube kubectl -- wait --for=condition=ready pod -l app=mysql -n ${K8S_NAMESPACE} --timeout=300s"
-                sleep(time: 15, unit: 'SECONDS')
+                bat "minikube kubectl -- wait --for=condition=ready pod -l app=mysql -n %K8S_NAMESPACE% --timeout=300s"
+                bat "timeout /t 15 /nobreak"
 
-                // Application
-                bat "minikube kubectl -- apply -f k8s/app-deployment.yaml --validate=false"
-                bat "minikube kubectl -- apply -f k8s/app-service.yaml --validate=false"
-                bat "minikube kubectl -- set image deployment/${K8S_DEPLOYMENT_NAME} online-library=${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG} -n ${K8S_NAMESPACE}"
-                bat "minikube kubectl -- rollout status deployment/${K8S_DEPLOYMENT_NAME} -n ${K8S_NAMESPACE} --timeout=180s"
+                // 7️⃣ Application
+                bat "minikube kubectl -- apply -f k8s/app-deployment.yaml"
+                bat "minikube kubectl -- apply -f k8s/app-service.yaml"
+                bat "minikube kubectl -- set image deployment/%K8S_DEPLOYMENT_NAME% online-library=%DOCKER_REGISTRY%/%DOCKER_IMAGE%:%DOCKER_TAG% -n %K8S_NAMESPACE%"
+                bat "minikube kubectl -- rollout status deployment/%K8S_DEPLOYMENT_NAME% -n %K8S_NAMESPACE% --timeout=180s"
 
-                // Monitoring Stack (avec RBAC déjà appliqué)
+                // 8️⃣ Monitoring Stack
                 echo "Deploying Monitoring Stack..."
-                bat "minikube kubectl -- apply -f k8s/kube-state-metrics.yaml --validate=false"
-                bat "minikube kubectl -- apply -f k8s/cadvisor-daemonset.yaml --validate=false"
-                bat "minikube kubectl -- apply -f k8s/prometheus-deployment.yaml --validate=false"
-                bat "minikube kubectl -- apply -f k8s/grafana-deployment.yaml --validate=false"
+                bat "minikube kubectl -- apply -f k8s/kube-state-metrics.yaml"
+                bat "minikube kubectl -- apply -f k8s/cadvisor-daemonset.yaml"
+                bat "minikube kubectl -- apply -f k8s/prometheus-deployment.yaml"
+                bat "minikube kubectl -- apply -f k8s/grafana-deployment.yaml"
 
-                //ingress
-                bat "minikube kubectl -- apply -f k8s/ingress.yaml --validate=false"
-
-
-
+                // 9️⃣ Ingress
+                bat "minikube kubectl -- apply -f k8s/ingress.yaml"
             }
         }
 
         stage('Verify Deployment') {
             steps {
                 echo "Verifying Kubernetes deployment..."
-                bat "minikube kubectl -- get pods -n ${K8S_NAMESPACE}"
-                bat "minikube kubectl -- get services -n ${K8S_NAMESPACE}"
-                bat "minikube kubectl -- get pvc -n ${K8S_NAMESPACE}"
+                bat "minikube kubectl -- get pods -n %K8S_NAMESPACE%"
+                bat "minikube kubectl -- get services -n %K8S_NAMESPACE%"
+                bat "minikube kubectl -- get pvc -n %K8S_NAMESPACE%"
                 echo "=========================================="
                 echo "APPLICATION URLS:"
                 echo "Application: minikube service online-library-service -n online-library --url"
