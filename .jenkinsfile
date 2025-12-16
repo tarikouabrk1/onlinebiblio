@@ -127,7 +127,7 @@ pipeline {
                 bat "minikube kubectl -- apply -f k8s/mysql-service.yaml --validate=false"
 
                 echo "Waiting for MySQL to be ready..."
-                bat "minikube kubectl -- wait --for=condition=ready pod -l app=mysql -n ${K8S_NAMESPACE} --timeout=180s"
+                bat "minikube kubectl -- wait --for=condition=ready pod -l app=mysql -n ${K8S_NAMESPACE} --timeout=300s"
                 sleep(time: 15, unit: 'SECONDS')
 
                 // Application
