@@ -10,17 +10,17 @@ public class DatabaseConnection {
 
     private static final Logger LOGGER = Logger.getLogger(DatabaseConnection.class.getName());
 
-    // ✅ Lire l'URL depuis les variables d'environnement (Kubernetes ou Docker Compose)
+    // Lire l'URL depuis les variables d'environnement (Kubernetes ou Docker Compose)
     // Si pas de variable d'environnement, utiliser localhost par défaut
     private static final String URL = System.getenv("DB_URL") != null
             ? System.getenv("DB_URL")
             : "jdbc:mysql://host.docker.internal:3306/online_library?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
 
-    // ✅ Lire les credentials depuis les variables d'environnement
+    // Lire les credentials depuis les variables d'environnement
     // Si pas de variable d'environnement, utiliser les valeurs par défaut
     private static final String USERNAME = System.getenv("DB_USERNAME") != null
             ? System.getenv("DB_USERNAME")
-            : "tarik";
+            : "root";
 
     private static final String PASSWORD = System.getenv("DB_PASSWORD") != null
             ? System.getenv("DB_PASSWORD")
