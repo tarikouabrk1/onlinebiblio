@@ -6,6 +6,7 @@ pipeline {
         DB_USERNAME = "root"
         DB_PASSWORD = "tarik123"
         DB_URL = "jdbc:mysql://mysql:3306/online_library?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+        KUBECONFIG = "C:\\Users\\PC\\.kube\\config"
 
         // Docker
         DOCKER_IMAGE = "onlinebiblio"
@@ -15,7 +16,7 @@ pipeline {
         // Kubernetes
         K8S_NAMESPACE = "online-library"
         K8S_DEPLOYMENT_NAME = "online-library"
-        KUBECONFIG = "C:\\ProgramData\\Jenkins\\.kube\\config"
+        K8S_SERVICE_NAME = "online-library-service"
     }
 
     stages {
@@ -101,77 +102,60 @@ pipeline {
             }
         }
 
-        stage('Verify Kubernetes Cluster') {
-            steps {
-                echo "Verifying Kubernetes cluster connectivity..."
-                script {
-                    def status = bat(returnStatus: true, script: 'minikube status')
-                    if (status != 0) {
-                        echo "Minikube is not running, starting it..."
-                        bat "minikube start"
-                        bat "timeout /t 20 /nobreak"
-                    }
-                }
-                bat "kubectl config use-context minikube"
-                bat "kubectl cluster-info"
-                bat "kubectl get nodes"
-            }
-        }
-
         stage('Deploy to Kubernetes') {
             steps {
                 echo "Deploying to Kubernetes..."
 
-                // 1. Namespace
-                bat "kubectl apply -f k8s/namespace.yaml"
+                // 1. Infrastructure de base
+                bat "minikube kubectl -- apply -f k8s/namespace.yaml --validate=false"
 
                 // 2. RBAC
-                bat "kubectl apply -f k8s/prometheus-rbac.yaml"
+                bat "minikube kubectl -- apply -f k8s/prometheus-rbac.yaml --validate=false"
 
                 // 3. Secrets
-                bat "kubectl apply -f k8s/mysql-secret.yaml"
+                bat "minikube kubectl -- apply -f k8s/mysql-secret.yaml --validate=false"
 
                 // 4. ConfigMaps
-                bat "kubectl apply -f k8s/mysql-init-configmap.yaml"
-                bat "kubectl apply -f k8s/prometheus-config.yaml"
-                bat "kubectl apply -f k8s/grafana-datasources.yaml"
-                bat "kubectl apply -f k8s/grafana-dashboard.yaml"
+                bat "minikube kubectl -- apply -f k8s/mysql-init-configmap.yaml --validate=false"
+                bat "minikube kubectl -- apply -f k8s/prometheus-config.yaml --validate=false"
+                bat "minikube kubectl -- apply -f k8s/grafana-datasources.yaml --validate=false"
+                bat "minikube kubectl -- apply -f k8s/grafana-dashboard.yaml --validate=false"
 
                 // 5. Storage
-                bat "kubectl apply -f k8s/mysql-pvc.yaml"
+                bat "minikube kubectl -- apply -f k8s/mysql-pvc.yaml --validate=false"
 
                 // 6. Base de données
-                bat "kubectl apply -f k8s/mysql-deployment.yaml"
-                bat "kubectl apply -f k8s/mysql-service.yaml"
+                bat "minikube kubectl -- apply -f k8s/mysql-deployment.yaml --validate=false"
+                bat "minikube kubectl -- apply -f k8s/mysql-service.yaml --validate=false"
 
                 echo "Waiting for MySQL to be ready..."
-                bat "kubectl wait --for=condition=ready pod -l app=mysql -n %K8S_NAMESPACE% --timeout=300s"
+                bat "minikube kubectl -- wait --for=condition=ready pod -l app=mysql -n %K8S_NAMESPACE% --timeout=300s"
                 bat "timeout /t 15 /nobreak"
 
                 // 7. Application
-                bat "kubectl apply -f k8s/app-deployment.yaml"
-                bat "kubectl apply -f k8s/app-service.yaml"
-                bat "kubectl set image deployment/%K8S_DEPLOYMENT_NAME% online-library=%DOCKER_REGISTRY%/%DOCKER_IMAGE%:%DOCKER_TAG% -n %K8S_NAMESPACE%"
-                bat "kubectl rollout status deployment/%K8S_DEPLOYMENT_NAME% -n %K8S_NAMESPACE% --timeout=180s"
+                bat "minikube kubectl -- apply -f k8s/app-deployment.yaml --validate=false"
+                bat "minikube kubectl -- apply -f k8s/app-service.yaml --validate=false"
+                bat "minikube kubectl -- set image deployment/%K8S_DEPLOYMENT_NAME% online-library=%DOCKER_REGISTRY%/%DOCKER_IMAGE%:%DOCKER_TAG% -n %K8S_NAMESPACE%"
+                bat "minikube kubectl -- rollout status deployment/%K8S_DEPLOYMENT_NAME% -n %K8S_NAMESPACE% --timeout=180s"
 
                 // 8. Monitoring Stack
                 echo "Deploying Monitoring Stack..."
-                bat "kubectl apply -f k8s/kube-state-metrics.yaml"
-                bat "kubectl apply -f k8s/cadvisor-daemonset.yaml"
-                bat "kubectl apply -f k8s/prometheus-deployment.yaml"
-                bat "kubectl apply -f k8s/grafana-deployment.yaml"
+                bat "minikube kubectl -- apply -f k8s/kube-state-metrics.yaml --validate=false"
+                bat "minikube kubectl -- apply -f k8s/cadvisor-daemonset.yaml --validate=false"
+                bat "minikube kubectl -- apply -f k8s/prometheus-deployment.yaml --validate=false"
+                bat "minikube kubectl -- apply -f k8s/grafana-deployment.yaml --validate=false"
 
                 // 9. Ingress
-                bat "kubectl apply -f k8s/ingress.yaml"
+                bat "minikube kubectl -- apply -f k8s/ingress.yaml --validate=false"
             }
         }
 
         stage('Verify Deployment') {
             steps {
                 echo "Verifying Kubernetes deployment..."
-                bat "kubectl get pods -n %K8S_NAMESPACE%"
-                bat "kubectl get services -n %K8S_NAMESPACE%"
-                bat "kubectl get pvc -n %K8S_NAMESPACE%"
+                bat "minikube kubectl -- get pods -n %K8S_NAMESPACE%"
+                bat "minikube kubectl -- get services -n %K8S_NAMESPACE%"
+                bat "minikube kubectl -- get pvc -n %K8S_NAMESPACE%"
                 echo "=========================================="
                 echo "APPLICATION URLS:"
                 echo "Application: minikube service online-library-service -n online-library --url"
