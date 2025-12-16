@@ -15,6 +15,7 @@ pipeline {
         // Kubernetes
         K8S_NAMESPACE = "online-library"
         K8S_DEPLOYMENT_NAME = "online-library"
+        KUBECONFIG = "C:\\ProgramData\\Jenkins\\.kube\\config"
     }
 
     stages {
@@ -103,18 +104,14 @@ pipeline {
         stage('Verify Kubernetes Cluster') {
             steps {
                 echo "Verifying Kubernetes cluster connectivity..."
-                bat """
-                    minikube status || minikube start
-                    timeout /t 10 /nobreak
-                    kubectl config use-context minikube
-                    kubectl cluster-info
-                """
-            }
-        }
-
-        stage('Verify Kubernetes Cluster') {
-            steps {
-                echo "Verifying Kubernetes cluster connectivity..."
+                script {
+                    def status = bat(returnStatus: true, script: 'minikube status')
+                    if (status != 0) {
+                        echo "Minikube is not running, starting it..."
+                        bat "minikube start"
+                        bat "timeout /t 20 /nobreak"
+                    }
+                }
                 bat "kubectl config use-context minikube"
                 bat "kubectl cluster-info"
                 bat "kubectl get nodes"
@@ -125,25 +122,25 @@ pipeline {
             steps {
                 echo "Deploying to Kubernetes..."
 
-                // 1️⃣ Namespace
+                // 1. Namespace
                 bat "kubectl apply -f k8s/namespace.yaml"
 
-                // 2️⃣ RBAC
+                // 2. RBAC
                 bat "kubectl apply -f k8s/prometheus-rbac.yaml"
 
-                // 3️⃣ Secrets
+                // 3. Secrets
                 bat "kubectl apply -f k8s/mysql-secret.yaml"
 
-                // 4️⃣ ConfigMaps
+                // 4. ConfigMaps
                 bat "kubectl apply -f k8s/mysql-init-configmap.yaml"
                 bat "kubectl apply -f k8s/prometheus-config.yaml"
                 bat "kubectl apply -f k8s/grafana-datasources.yaml"
                 bat "kubectl apply -f k8s/grafana-dashboard.yaml"
 
-                // 5️⃣ Storage
+                // 5. Storage
                 bat "kubectl apply -f k8s/mysql-pvc.yaml"
 
-                // 6️⃣ Base de données
+                // 6. Base de données
                 bat "kubectl apply -f k8s/mysql-deployment.yaml"
                 bat "kubectl apply -f k8s/mysql-service.yaml"
 
@@ -151,20 +148,20 @@ pipeline {
                 bat "kubectl wait --for=condition=ready pod -l app=mysql -n %K8S_NAMESPACE% --timeout=300s"
                 bat "timeout /t 15 /nobreak"
 
-                // 7️⃣ Application
+                // 7. Application
                 bat "kubectl apply -f k8s/app-deployment.yaml"
                 bat "kubectl apply -f k8s/app-service.yaml"
                 bat "kubectl set image deployment/%K8S_DEPLOYMENT_NAME% online-library=%DOCKER_REGISTRY%/%DOCKER_IMAGE%:%DOCKER_TAG% -n %K8S_NAMESPACE%"
                 bat "kubectl rollout status deployment/%K8S_DEPLOYMENT_NAME% -n %K8S_NAMESPACE% --timeout=180s"
 
-                // 8️⃣ Monitoring Stack
+                // 8. Monitoring Stack
                 echo "Deploying Monitoring Stack..."
                 bat "kubectl apply -f k8s/kube-state-metrics.yaml"
                 bat "kubectl apply -f k8s/cadvisor-daemonset.yaml"
                 bat "kubectl apply -f k8s/prometheus-deployment.yaml"
                 bat "kubectl apply -f k8s/grafana-deployment.yaml"
 
-                // 9️⃣ Ingress
+                // 9. Ingress
                 bat "kubectl apply -f k8s/ingress.yaml"
             }
         }
