@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         // Database
-        
         DB_URL = "jdbc:mysql://mysql:3306/online_library?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
         KUBECONFIG = "C:\\Users\\PC\\.kube\\config"
 
