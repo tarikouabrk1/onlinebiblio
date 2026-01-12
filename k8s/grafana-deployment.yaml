@@ -5,10 +5,9 @@ metadata:
   namespace: online-library
 type: Opaque
 stringData:
-  # ✅ Ces valeurs doivent être changées en production !
-  # Créer ce secret manuellement avec des valeurs sécurisées
+
   admin-user: admin
-  admin-password: CHANGE_THIS_IN_PRODUCTION  # ← À remplacer
+  admin-password: CHANGE_THIS_IN_PRODUCTION
 
 ---
 apiVersion: apps/v1
@@ -35,7 +34,6 @@ spec:
             - containerPort: 3000
               name: web
           env:
-            # ✅ SOLUTION : Utiliser le Secret Kubernetes
             - name: GF_SECURITY_ADMIN_USER
               valueFrom:
                 secretKeyRef:
