@@ -10,21 +10,11 @@ public class DatabaseConnection {
 
     private static final Logger LOGGER = Logger.getLogger(DatabaseConnection.class.getName());
 
-    // Lire l'URL depuis les variables d'environnement (Kubernetes ou Docker Compose)
-    // Si pas de variable d'environnement, utiliser localhost par défaut
-    private static final String URL = System.getenv("DB_URL") != null
-            ? System.getenv("DB_URL")
-            : "jdbc:mysql://host.docker.internal:3306/online_library?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-
-    // Lire les credentials depuis les variables d'environnement
-    // Si pas de variable d'environnement, utiliser les valeurs par défaut
-    private static final String USERNAME = System.getenv("DB_USERNAME") != null
-            ? System.getenv("DB_USERNAME")
-            : "root";
-
-    private static final String PASSWORD = System.getenv("DB_PASSWORD") != null
-            ? System.getenv("DB_PASSWORD")
-            : "tarik123";
+    // ✅ SOLUTION : Utiliser uniquement les variables d'environnement
+    // Ne JAMAIS mettre de valeurs par défaut pour les credentials en production
+    private static final String URL = getEnvOrThrow("DB_URL");
+    private static final String USERNAME = getEnvOrThrow("DB_USERNAME");
+    private static final String PASSWORD = getEnvOrThrow("DB_PASSWORD");
 
     // Connection for unit tests (mock)
     private static Connection testConnection = null;
@@ -36,6 +26,39 @@ public class DatabaseConnection {
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("MySQL JDBC Driver not found", e);
         }
+    }
+
+    /**
+     * Récupère une variable d'environnement ou lance une exception si elle n'existe pas
+     * @param envVar Nom de la variable d'environnement
+     * @return Valeur de la variable
+     * @throws IllegalStateException si la variable n'existe pas
+     */
+    private static String getEnvOrThrow(String envVar) {
+        String value = System.getenv(envVar);
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalStateException(
+                    String.format("Missing required environment variable: %s. " +
+                            "Please set it before starting the application.", envVar)
+            );
+        }
+        return value;
+    }
+
+    /**
+     * Version pour développement local avec valeurs par défaut
+     * À utiliser UNIQUEMENT en développement local, JAMAIS en production
+     */
+    private static String getEnvOrDefault(String envVar, String defaultValue) {
+        String value = System.getenv(envVar);
+        if (value == null || value.trim().isEmpty()) {
+            LOGGER.warning(String.format(
+                    "Environment variable %s not set, using default value. " +
+                            "This should ONLY happen in development!", envVar
+            ));
+            return defaultValue;
+        }
+        return value;
     }
 
     public static Connection getConnection() throws SQLException {

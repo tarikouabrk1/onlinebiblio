@@ -1,3 +1,16 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: grafana-secret
+  namespace: online-library
+type: Opaque
+stringData:
+  # ✅ Ces valeurs doivent être changées en production !
+  # Créer ce secret manuellement avec des valeurs sécurisées
+  admin-user: admin
+  admin-password: CHANGE_THIS_IN_PRODUCTION  # ← À remplacer
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -22,10 +35,17 @@ spec:
             - containerPort: 3000
               name: web
           env:
+            # ✅ SOLUTION : Utiliser le Secret Kubernetes
             - name: GF_SECURITY_ADMIN_USER
-              value: "admin"
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secret
+                  key: admin-user
             - name: GF_SECURITY_ADMIN_PASSWORD
-              value: "admin123"
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secret
+                  key: admin-password
             - name: GF_USERS_ALLOW_SIGN_UP
               value: "false"
           volumeMounts:
@@ -33,7 +53,6 @@ spec:
               mountPath: /var/lib/grafana
             - name: grafana-datasources
               mountPath: /etc/grafana/provisioning/datasources
-            # ⭐ ADD THESE TWO VOLUME MOUNTS ⭐
             - name: grafana-dashboard-provider
               mountPath: /etc/grafana/provisioning/dashboards
             - name: grafana-dashboards
@@ -51,7 +70,6 @@ spec:
         - name: grafana-datasources
           configMap:
             name: grafana-datasources
-        # ⭐ ADD THESE TWO VOLUMES ⭐
         - name: grafana-dashboard-provider
           configMap:
             name: grafana-dashboards

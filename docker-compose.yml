@@ -1,30 +1,35 @@
 version: '3.8'
-
 services:
   mysql:
     image: mysql:8
     container_name: mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: tarik123
-      MYSQL_DATABASE: online_library
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-online_library}
     ports:
       - "3307:3306"
     volumes:
       - mysql-data:/var/lib/mysql
 
   online-library:
-    image: tarik123abc/onlinebiblio:latest
+    image: ${DOCKER_REGISTRY:-tarik123abc}/onlinebiblio:${DOCKER_TAG:-latest}
     container_name: online-library
     restart: always
     ports:
       - "8081:8082"
     environment:
-      DB_URL: jdbc:mysql://mysql:3306/online_library?useSSL=false&serverTimezone=UTC
-      DB_USERNAME: root
-      DB_PASSWORD: tarik123
+      DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-online_library}?useSSL=false&serverTimezone=UTC
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD}
     depends_on:
       - mysql
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/online-library/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 volumes:
   mysql-data:
